@@ -55,6 +55,10 @@ const cssRegex = /\.css$/;
 const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
+// 此处添加: 自定义添加less配置
+const lessRegex = /\.less$/;
+const lessModuleRegex = /\.module\.less$/;
+// 添加结束
 
 const hasJsxRuntime = (() => {
     if (process.env.DISABLE_NEW_JSX_TRANSFORM === 'true') {
@@ -128,22 +132,41 @@ module.exports = function (webpackEnv) {
             }
         ].filter(Boolean);
         if (preProcessor) {
-            loaders.push(
-                {
-                    loader: require.resolve('resolve-url-loader'),
+            // loaders.push(
+            //     {
+            //         loader: require.resolve('resolve-url-loader'),
+            //         options: {
+            //             sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+            //             root: paths.appSrc
+            //         }
+            //     },
+            //     {
+            //         loader: require.resolve(preProcessor),
+            //         options: {
+            //             sourceMap: true
+            //         }
+            //     }
+            // );
+            let loader = require.resolve(preProcessor);
+            // 此处添加: 自定义主题
+            if (preProcessor === 'less-loader') {
+                loader = {
+                    loader,
                     options: {
-                        sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
-                        root: paths.appSrc
+                        // sourceMap: true,
+                        javascriptEnabled: true,
+                        modifyVars: {
+                            '@primary-color': '#1890ff',
+                            '@link-color': '#1890ff'
+                            // 'border-radius-base': '2px'
+                        }
                     }
-                },
-                {
-                    loader: require.resolve(preProcessor),
-                    options: {
-                        sourceMap: true
-                    }
-                }
-            );
+                };
+            }
+            loaders.push(loader);
         }
+
+        // 添加结束
         return loaders;
     };
 
@@ -397,6 +420,13 @@ module.exports = function (webpackEnv) {
 
                                 plugins: [
                                     [
+                                        'import',
+                                        {
+                                            libraryName: 'antd',
+                                            style: true
+                                        }
+                                    ],
+                                    [
                                         require.resolve('babel-plugin-named-asset-import'),
                                         {
                                             loaderMap: {
@@ -517,6 +547,32 @@ module.exports = function (webpackEnv) {
                                 'sass-loader'
                             )
                         },
+                        // 此处添加: 自定义添加 less
+                        {
+                            test: lessRegex,
+                            exclude: lessModuleRegex,
+                            use: getStyleLoaders(
+                                {
+                                    importLoaders: 2,
+                                    sourceMap: isEnvProduction && shouldUseSourceMap
+                                },
+                                'less-loader'
+                            ),
+                            sideEffects: true
+                        },
+                        {
+                            test: lessModuleRegex,
+                            use: getStyleLoaders(
+                                {
+                                    importLoaders: 2,
+                                    sourceMap: isEnvProduction && shouldUseSourceMap,
+                                    modules: true,
+                                    getLocalIdent: getCSSModuleLocalIdent
+                                },
+                                'less-loader'
+                            )
+                        },
+                        // 添加结束!
                         // "file" loader makes sure those assets get served by WebpackDevServer.
                         // When you `import` an asset, you get its (virtual) filename.
                         // In production, they would get copied to the `build` folder.

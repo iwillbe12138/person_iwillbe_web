@@ -1,9 +1,15 @@
+/*
+ * @Description:
+ * @Author: IWillBe12138
+ * @Date: 2021-07-18 14:13:22
+ * @LastEditTime: 2021-07-18 20:07:10
+ * @LastEditors: IWillBe12138
+ */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import 'antd/dist/antd.css';
 import zhCN from 'antd/lib/locale/zh_CN';
 import moment from 'moment';
 import 'moment/locale/zh-cn';
